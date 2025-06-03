@@ -6,8 +6,8 @@
 // #define Board_C_address 0x10  // Board 3
 #define Board_Elivator 0x11 // Elivator
 
-#define vacume_PIN 13  // Pin for the vacuum motor
-#define pressure_PIN 5 // Pressure sensor pin
+#define vacume_PIN 13   // Pin for the vacuum motor
+#define pressure_PIN 33 // Pressure sensor pin
 
 bool pillCaught = false;        // Flag to indicate if the pill is trying to be caught
 bool stateCatchingPill = false; // Flag to indicate if the elivator is trying to catch the pill
@@ -147,7 +147,7 @@ void setup()
 
 void loop()
 {
-    Serial.println(digitalRead(pressure_PIN));
+    Serial.println(analogRead(pressure_PIN));
     // Send data to slave
     if (Serial.available() > 0)
     {
