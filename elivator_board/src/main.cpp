@@ -45,10 +45,10 @@ void receiveEvent(int howMany)
   i2cBuffer[i2cBufferIndex] = '\0';
   newCommandReceived = true;
   String command = String(i2cBuffer);
-  Serial.println("Testing");
-  if (command == "pillCaught")
+  if (command == "pillCaught") // Just change a variable, not activate the motor
   {
     pillCaught = true;
+    newCommandReceived = false;
   }
 }
 
@@ -89,13 +89,13 @@ void setup()
 
 void loop()
 {
-  if (Serial.available() > 0)
-  {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-    DEBUG_WITH_TEXT(command, "Current command: ", "");
-    motorController.processCommand(command);
-  }
+  // if (Serial.available() > 0)
+  // {
+  //   String command = Serial.readStringUntil('\n');
+  //   command.trim();
+  //   DEBUG_WITH_TEXT(command, "Current command: ", "");
+  //   motorController.processCommand(command);
+  // }
   processI2CCommand();
   // motorController.update();
 }

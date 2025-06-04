@@ -17,12 +17,13 @@ public:
   void moveToPlatform(char platform_letter);
   void moveSteps(int steps);
   void moveToStart();
+  void moveToEnd();
 
 private:
   static const uint16_t MOTOR_STEPS = 200;
   static const uint8_t MICROSTEPS = 32;
   static const uint32_t TOTAL_STEPS = 96000;
-  static const uint8_t RPM = 25;
+  static const uint8_t RPM = 50;
   static const long platform_space = -9000;
 
   uint8_t dirPin;
@@ -48,6 +49,8 @@ private:
   void stopMotor();
   bool checkButtons();
   int smartStop();
+  bool opticalStop();
+  void moveUp();
   void calibrateReverse();
 };
 

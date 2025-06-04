@@ -18,7 +18,7 @@ void MotorController::begin()
   buttomBtn.setBtnLevel(1);
   topBtn.setBtnLevel(1);
   pogoBtn.setBtnLevel(1);
-  opticalBtn.setBtnLevel(1);
+  opticalBtn.setBtnLevel(0);
 }
 
 void MotorController::processCommand(String command)
@@ -40,10 +40,10 @@ void MotorController::processCommand(String command)
       Serial.println(container);
       moveToPlatform(container);
     }
-    else if (s.startsWith("up"))
+    else if (s == "stepUp")
     {
-      Serial.println("getPill command received"); // Moving untill optical sensor is pressed
-      moveSteps(15000);                           // 9000
+      Serial.println("moving up"); // Moving untill optical sensor is pressed
+      moveUp();                    // 9000
     }
     else if (s == "stop")
     {
@@ -53,9 +53,13 @@ void MotorController::processCommand(String command)
     {
       moveToStart();
     }
+    else if (s == "toEnd")
+    {
+      moveToEnd();
+    }
     else if (s == "getPill")
     {
-      motor.setRPM(10);
+      motor.setRPM(20);
       Serial.println("getPill command received");
       moveSteps(-15000); // 9000
     }
@@ -113,7 +117,7 @@ int MotorController::smartStop()
     stopMotor();
     return 1;
   }
-  else if (opticalBtn.press())
+  else if (opticalBtn.press()) // .press
   {
     countOptical++;
     Serial.println("opticalBtn pressed");
@@ -124,12 +128,26 @@ int MotorController::smartStop()
   {
     Serial.println("vacume pressure, pill caught");
     stopMotor();
-    return 3; // Stopped
+    *pillCaught = false; // Reset the pill caught state
+    return 3;            // Stopped
   }
   else
   {
     return 0;
   }
+}
+
+bool MotorController::opticalStop()
+{
+  opticalBtn.tick();
+  if (opticalBtn.press())
+  {
+    countOptical--;
+    Serial.println("opticalBtn pressed");
+    stopMotor();
+    return true;
+  }
+  return false;
 }
 
 void MotorController::moveSteps(int steps)
@@ -139,14 +157,28 @@ void MotorController::moveSteps(int steps)
   isMoving = true;
   while (motor.nextAction())
   {
-    Serial.println(*pillCaught);
     if (smartStop() != 0) // Stops motor if needed
     {
       break;
     }
   }
   stopMotor();
-  motor.setRPM(25); // Reset RPM after moving
+  motor.setRPM(50); // Reset RPM after moving
+}
+
+void MotorController::moveUp()
+{
+  startMotor();
+  motor.startMove(15000);
+  isMoving = true;
+  while (motor.nextAction())
+  {
+    if (opticalStop() != 0) // Stops motor if needed
+    {
+      break;
+    }
+  }
+  stopMotor();
 }
 
 void MotorController::moveToPlatform(char platform_letter)
@@ -198,6 +230,22 @@ void MotorController::moveToStart()
 {
   startMotor();
   motor.startMove(80000); // Non-blocking: prepares the motion
+  while (motor.nextAction())
+  {
+    topBtn.tick();
+    if (checkButtons() || topBtn.pressing()) // Stops motor if needed
+    {
+      break;
+    }
+  }
+  stopMotor();
+  countOptical = 0;
+}
+
+void MotorController::moveToEnd()
+{
+  startMotor();
+  motor.startMove(-80000); // Non-blocking: prepares the motion
   while (motor.nextAction())
   {
     topBtn.tick();
