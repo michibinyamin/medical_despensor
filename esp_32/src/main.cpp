@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
+// #include <cstdlib>
 
 #define Board_A_address 0x08 // Board 1
 #define Board_B_address 0x09 // Board 2
@@ -44,11 +45,10 @@ void slavesApprove()
     bool approveA = true; // Change to false if you want to test the approval
     bool approveB = false;
     bool approveE = false;
+    Serial.println("Waiting for slaves to approve...");
     while (!(approveA && approveB && approveE))
     {
         // Wait for slaves to approve
-        Serial.println("Waiting for slaves to approve...");
-        delay(1000); // Wait for 1 second before checking again
 
         // Wire.requestFrom(Board_A_address, 1);
         // if (Wire.available())
@@ -62,26 +62,28 @@ void slavesApprove()
         if (Wire.available())
         {
             approveB = Wire.read(); // 1 = approved
-            Serial.print("Board B approval: ");
-            Serial.println(approveB);
+            // Serial.print("Board B approval: ");
+            // Serial.println(approveB);
         }
 
         Wire.requestFrom(Board_Elivator, 1);
         if (Wire.available())
         {
             approveE = Wire.read(); // 1 = approved
-            Serial.print("Elevator approval: ");
-            Serial.println(approveE);
+            // Serial.print("Elevator approval: ");
+            // Serial.println(approveE);
         }
-        Serial.println(digitalRead(pressure_PIN));
-        // if (stateCatchingPill && digitalRead(pressure_PIN) == 1) // Check if pressure is high
-        // {
-        //     send_command("pillCaught", Board_Elivator); // Send command to elivator to stop becuase pill is caught(only if pill is caught)
-        //     pillCaught = true;
-        //     stateCatchingPill = false;
-        //     return; // If pill is caught, break the loop
-        // }
+        if (stateCatchingPill && analogRead(pressure_PIN) < 3000) // Check if pressure is high
+        {
+            Serial.println("Pill Caught!");
+            Serial.println(analogRead(pressure_PIN));
+            send_command("pillCaught", Board_Elivator); // Send command to elivator to stop becuase pill is caught(only if pill is caught)
+            pillCaught = true;
+            stateCatchingPill = false;
+            break; // If pill is caught, break the loop
+        }
     }
+    Serial.println("All slaves approved the command");
 }
 
 void smart_search(char platform, int container)
@@ -90,24 +92,56 @@ void smart_search(char platform, int container)
     Serial.println("Searching for pill");
     pillCaught = false;
     stateCatchingPill = true; // Set the state to catching pill
-    digitalWrite(vacume_PIN, 1);
-    send_command("motor(getPill)", Board_Elivator);
-    slavesApprove();
-    if (pillCaught)
+    int i = 1;
+    int m = 1;
+    while (!pillCaught)
     {
-        send_command("motor(up)", Board_Elivator); // Move elivator to the platform
+        digitalWrite(vacume_PIN, 1);
+        send_command("motor(getPill)", Board_Elivator);
         slavesApprove();
-        digitalWrite(vacume_PIN, 0); // Turn off the vacume for testing purposes
-        pillCaught = false;
+        if (pillCaught)
+        {
+            send_command("motor(stepUp)", Board_Elivator); // Move elivator up
+            slavesApprove();
+            send_command("motor(toStart)", Board_B_address); // CHANGE TO CORRECT PLATFORM
+            // send_command("motor(toStart)", Board_A_address);
+            slavesApprove();
+            send_command("motor(toEnd)", Board_Elivator); // Move elivator to the platform
+            slavesApprove();
+            digitalWrite(vacume_PIN, 0);
+            delay(5000);
+            send_command("motor(toStart)", Board_Elivator);
+        }
+        else // Change in the future(put in loop)
+        {
+            delay(1000);
+            Serial.println("Pill not caught, retrying...");
+            send_command("motor(stepUp)", Board_Elivator); // Move elivator to the platform
+            slavesApprove();
+
+            if (i < 5)
+            {
+                send_command("motor(moveSteps-" + String(i * 150 * m) + ")", Board_B_address); // Move platform to start position
+                send_command("motor(moveTo-" + String(platform) + ")", Board_Elivator);
+                slavesApprove();
+                i++;
+                m = m * -1;
+            }
+            else
+            {
+                send_command("motor(toStart)", Board_Elivator);
+                slavesApprove();
+                send_command("motor(toStart)", Board_B_address);
+                digitalWrite(vacume_PIN, 0);
+                return;
+            }
+            // slavesApprove();
+            // digitalWrite(vacume_PIN, 0); // Turn off the vacume for testing purposes
+            digitalWrite(vacume_PIN, 0);
+            // return;
+        }
     }
-    else // Change in the future(put in loop)
-    {
-        Serial.println("Pill not caught, retrying...");
-        send_command("motor(toStart)", Board_Elivator); // Move elivator to the start position
-        slavesApprove();
-        digitalWrite(vacume_PIN, 0); // Turn off the vacume for testing purposes
-        return;                      // Exit the function if pill is not caught
-    }
+    pillCaught = false;
 }
 
 void get_pill(char platform, int container)
@@ -147,8 +181,6 @@ void setup()
 
 void loop()
 {
-    Serial.println(analogRead(pressure_PIN));
-    // Send data to slave
     if (Serial.available() > 0)
     {
         String command = Serial.readStringUntil('\n'); // or use Serial.readString()

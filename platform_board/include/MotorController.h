@@ -22,8 +22,8 @@ private:
   static const uint16_t MOTOR_STEPS = 200;
   static const uint8_t MICROSTEPS = 32;
   static const uint32_t TOTAL_STEPS = 96000;
-  static const uint8_t RPM = 25;
-  static const long container_space = -3072;
+  static const uint8_t RPM = 50;
+  static const long container_space = -3170;
 
   uint8_t dirPin;
   uint8_t stepPin;
