@@ -35,7 +35,7 @@ void calibrate()
 {
     // Calibrate Platform 1 & Platform 2 simontaniously
     // Calibrate Elivator
-    // send_command("motor(toStart)",Board_A_address);
+    send_command("motor(toStart)", Board_A_address);
     send_command("motor(toStart)", Board_B_address);
     send_command("motor(toStart)", Board_Elivator);
 }
@@ -50,13 +50,13 @@ void slavesApprove()
     {
         // Wait for slaves to approve
 
-        // Wire.requestFrom(Board_A_address, 1);
-        // if (Wire.available())
-        // {
-        //     approveA = Wire.read(); // 1 = approved
-        //     Serial.print("Board A approval: ");
-        //     Serial.println(approveA);
-        // }
+        Wire.requestFrom(Board_A_address, 1);
+        if (Wire.available())
+        {
+            approveA = Wire.read(); // 1 = approved
+            // Serial.print("Board A approval: ");
+            // Serial.println(approveA);
+        }
 
         Wire.requestFrom(Board_B_address, 1);
         if (Wire.available())
@@ -104,7 +104,7 @@ void smart_search(char platform, int container)
             send_command("motor(stepUp)", Board_Elivator); // Move elivator up
             slavesApprove();
             send_command("motor(toStart)", Board_B_address); // CHANGE TO CORRECT PLATFORM
-            // send_command("motor(toStart)", Board_A_address);
+            send_command("motor(toStart)", Board_A_address);
             slavesApprove();
             send_command("motor(toEnd)", Board_Elivator); // Move elivator to the platform
             slavesApprove();
@@ -112,17 +112,24 @@ void smart_search(char platform, int container)
             delay(5000);
             send_command("motor(toStart)", Board_Elivator);
         }
-        else // Change in the future(put in loop)
+        else
         {
-            delay(1000);
+            digitalWrite(vacume_PIN, 0);
             Serial.println("Pill not caught, retrying...");
             send_command("motor(stepUp)", Board_Elivator); // Move elivator to the platform
             slavesApprove();
 
             if (i < 5)
             {
-                send_command("motor(moveSteps-" + String(i * 150 * m) + ")", Board_B_address); // Move platform to start position
-                send_command("motor(moveTo-" + String(platform) + ")", Board_Elivator);
+                if (platform == 'a')
+                {
+                    send_command("motor(moveSteps-" + String(i * 150 * m) + ")", Board_A_address); // Move platform to start position
+                }
+                else
+                {
+                    send_command("motor(moveSteps-" + String(i * 150 * m) + ")", Board_B_address); // Move platform to start position
+                }
+                // send_command("motor(moveTo-" + String(platform) + ")", Board_Elivator);
                 slavesApprove();
                 i++;
                 m = m * -1;
@@ -132,6 +139,7 @@ void smart_search(char platform, int container)
                 send_command("motor(toStart)", Board_Elivator);
                 slavesApprove();
                 send_command("motor(toStart)", Board_B_address);
+                send_command("motor(toStart)", Board_A_address);
                 digitalWrite(vacume_PIN, 0);
                 return;
             }
@@ -153,13 +161,13 @@ void get_pill(char platform, int container)
     if (platform == 'a')
     {
         send_command("motor(toStart)", Board_B_address);
-        send_command("motor(moveTo-" + String(platform) + ")", Board_Elivator);
+        slavesApprove();
         send_command("motor(moveTo-" + String(container) + ")", Board_A_address);
-
-        // Add request like platform b
+        send_command("motor(moveTo-" + String(platform) + ")", Board_Elivator);
     }
     else if (platform == 'b')
     {
+        send_command("motor(toStart)", Board_A_address);
         send_command("motor(moveTo-" + String(container) + ")", Board_B_address);
         send_command("motor(moveTo-" + String(platform) + ")", Board_Elivator);
     }

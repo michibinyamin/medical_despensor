@@ -37,7 +37,7 @@ void MotorController::processCommand(String command)
     else if (s.startsWith("moveTo"))
     {
       char container = s.charAt(s.indexOf('-') + 1);
-      Serial.println(container);
+      Serial.println("moving to platform " + String(container));
       moveToPlatform(container);
     }
     else if (s == "stepUp")
@@ -51,7 +51,7 @@ void MotorController::processCommand(String command)
     }
     else if (s == "toStart")
     {
-      moveToStart();
+      moveToStart();  // Also resets values
     }
     else if (s == "toEnd")
     {
@@ -183,6 +183,7 @@ void MotorController::moveUp()
 
 void MotorController::moveToPlatform(char platform_letter)
 {
+  countOptical = 0; // Reset optical sensor count
   startMotor();
   if (platform_letter == 'a')
   {
@@ -190,13 +191,12 @@ void MotorController::moveToPlatform(char platform_letter)
     while (motor.nextAction())
     {
       opticalBtn.tick();
-      if (opticalBtn.press() && (countOptical == 0 || countOptical == 1))
+      if (opticalBtn.press() && countOptical == 0)
       {
-        Serial.println("Optical sensor activated");
         countOptical++;
         // No break here, continue to check for the second activation
       }
-      else if (opticalBtn.press() && countOptical >= 2)
+      else if (opticalBtn.press() && countOptical >= 1)
       {
         Serial.println("Optical sensor activated");
         countOptical++;

@@ -21,10 +21,8 @@
 #define CCW_PIN 3
 #define CW_PIN 2
 
-#define Board_address 0x09 // Board 1
-// #define Board_B_address 0x09  // Board 2
-// #define I2C_SLAVE_ADDR 0x10  // Board 2
-// #define I2C_SLAVE_ADDR 0x11  // Elivator
+#define Board_address 0x08 // Board A
+// #define Board_address 0x09 // Board B
 
 #define BUFFER_SIZE 32
 char i2cBuffer[BUFFER_SIZE];
