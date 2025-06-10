@@ -109,7 +109,7 @@ void smart_search(char platform, int container)
             send_command("motor(toEnd)", Board_Elivator); // Move elivator to the platform
             slavesApprove();
             digitalWrite(vacume_PIN, 0);
-            delay(5000);
+            delay(500);
             send_command("motor(toStart)", Board_Elivator);
         }
         else
@@ -149,6 +149,7 @@ void smart_search(char platform, int container)
             // return;
         }
     }
+    slavesApprove();
     pillCaught = false;
 }
 
@@ -196,27 +197,65 @@ void loop()
         {
             calibrate();
         }
+        // else if (command.startsWith("get"))
+        // {
+        //     int startIdx = command.indexOf('(');
+        //     int endIdx = command.indexOf(')');
+        //     if (startIdx != -1 && endIdx != -1 && endIdx > startIdx)
+        //     {
+        //         // Extract the argument inside parentheses, e.g., "A2" from "get(A2)"
+        //         String param = command.substring(startIdx + 1, endIdx);
+        //         if (param.length() == 2 && isAlpha(param.charAt(0)) && isDigit(param.charAt(1)))
+        //         {
+        //             char letter = param.charAt(0);
+        //             int number = param.substring(1).toInt(); // Handles multi-digit numbers too
+
+        //             Serial.print("Letter: ");
+        //             Serial.println(letter);
+        //             Serial.print("Number: ");
+        //             Serial.println(number);
+        //             get_pill(letter, number);
+        //         }
+        //     }
+        // }
         else if (command.startsWith("get"))
         {
             int startIdx = command.indexOf('(');
             int endIdx = command.indexOf(')');
             if (startIdx != -1 && endIdx != -1 && endIdx > startIdx)
             {
-                // Extract the argument inside parentheses, e.g., "A2" from "get(A2)"
-                String param = command.substring(startIdx + 1, endIdx);
-                if (param.length() == 2 && isAlpha(param.charAt(0)) && isDigit(param.charAt(1)))
+                String params = command.substring(startIdx + 1, endIdx); // "A2,B4,A7"
+                int lastIndex = 0;
+                while (lastIndex < params.length())
                 {
-                    char letter = param.charAt(0);
-                    int number = param.substring(1).toInt(); // Handles multi-digit numbers too
+                    int commaIdx = params.indexOf(',', lastIndex);
+                    String token;
+                    if (commaIdx == -1)
+                    {
+                        token = params.substring(lastIndex);
+                        lastIndex = params.length();
+                    }
+                    else
+                    {
+                        token = params.substring(lastIndex, commaIdx);
+                        lastIndex = commaIdx + 1;
+                    }
 
-                    Serial.print("Letter: ");
-                    Serial.println(letter);
-                    Serial.print("Number: ");
-                    Serial.println(number);
-                    get_pill(letter, number);
+                    token.trim();
+                    if (token.length() >= 2 && isAlpha(token.charAt(0)))
+                    {
+                        char letter = token.charAt(0);
+                        int number = token.substring(1).toInt();
+                        Serial.print("Letter: ");
+                        Serial.println(letter);
+                        Serial.print("Number: ");
+                        Serial.println(number);
+                        get_pill(letter, number);
+                    }
                 }
             }
         }
+
         else
         {
             Serial.println("Unknown Command");

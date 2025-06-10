@@ -51,7 +51,7 @@ void MotorController::processCommand(String command)
     }
     else if (s == "toStart")
     {
-      moveToStart();  // Also resets values
+      moveToStart(); // Also resets values
     }
     else if (s == "toEnd")
     {
@@ -59,7 +59,7 @@ void MotorController::processCommand(String command)
     }
     else if (s == "getPill")
     {
-      motor.setRPM(20);
+      motor.setRPM(SRPM);
       Serial.println("getPill command received");
       moveSteps(-15000); // 9000
     }
@@ -163,7 +163,7 @@ void MotorController::moveSteps(int steps)
     }
   }
   stopMotor();
-  motor.setRPM(50); // Reset RPM after moving
+  motor.setRPM(RPM); // Reset RPM after moving
 }
 
 void MotorController::moveUp()

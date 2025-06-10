@@ -13,7 +13,8 @@ void MotorController::begin()
 
   // motor init
   motor.begin(RPM, MICROSTEPS);
-  motor.setSpeedProfile(motor.LINEAR_SPEED, 700, 350);
+  motor.setSpeedProfile(motor.LINEAR_SPEED, 350, 350);
+  // motor.setSpeedProfile(motor.CONSTANT_SPEED);
   stopMotor();
   cwBtn.setBtnLevel(1);
   ccwBtn.setBtnLevel(1);

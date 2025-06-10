@@ -23,7 +23,7 @@ private:
   static const uint8_t MICROSTEPS = 32;
   static const uint32_t TOTAL_STEPS = 96000;
   static const uint8_t RPM = 50;
-  static const long container_space = -3170;
+  static const long container_space = -3070;
 
   uint8_t dirPin;
   uint8_t stepPin;

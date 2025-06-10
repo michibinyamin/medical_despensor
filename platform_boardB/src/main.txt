@@ -1,0 +1,92 @@
+#include <Arduino.h>
+#include <EncButton.h>
+#include <BasicStepperDriver.h>
+#include "platform.h"
+
+// Pin definitions for Platform
+#define M1_DIR_PIN 32
+#define M1_STEP_PIN 33
+#define M1_EN_PIN 12 // ?
+#define M1_CW_BTN_PIN 15
+#define M1_CCW_BTN_PIN 22
+
+// Motor parameters
+#define MOTOR_STEPS 200
+#define MICROSTEPS 16
+
+#define RPM 40
+
+// Create motor objects
+//Platform platform1(M1_DIR_PIN, M1_STEP_PIN, M1_CW_BTN_PIN, M1_CCW_BTN_PIN, MOTOR_STEPS, MICROSTEPS, RPM);
+
+boolean once = true;
+
+BasicStepperDriver motor;
+Button _cwBtn;
+Button _ccwBtn;
+int _dirPin;
+int _stepPin;
+int _motorSteps;
+int _microsteps;
+int _rpm;
+
+float firstContainer = 1546.667; // first container position (needs to be changed to be automated)
+
+
+void calibrate()
+{
+    Serial.println("=== Calibrating Motor ===");
+    motor.setSpeedProfile(motor.LINEAR_SPEED, 20000, 5000);
+    motor.enable();
+
+    // Move CCW
+    Serial.println("Moving counterClockwise");
+    motor.startMove(100000);
+    while (motor.nextAction())
+    {
+        _ccwBtn.tick();
+
+        if(!digitalRead(27))
+          Serial.println("FAULT");
+        if (_ccwBtn.press())
+        {
+            motor.stop();
+            break;
+        }
+    }
+
+    motor.disable();
+    Serial.print("Calibration done.");
+}
+
+// Move to a specific position (e.g., based on a cup number or target position)
+void moveTo(int position)
+{
+    if (position <= 8 && position >= 1)
+    {
+        motor.enable();
+        motor.setRPM(_rpm); // Set speed to 60 RPM
+        motor.move(-firstContainer * position);
+        // If last container is reached, then the button should be pressed, make sure this has this condition
+        Serial.println("Motor 1 moved");
+        motor.disable();
+    }
+}
+
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial)
+    delay(10);
+  calibrate();  // In the future take this out of setup
+  Serial.println("All calibration done!");
+}
+
+void loop()
+{
+  // if (once)
+  // {
+  //   platform1.moveTo(5);
+  //   once = false;
+  // }
+}
