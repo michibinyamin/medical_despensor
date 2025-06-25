@@ -1,0 +1,21 @@
+{
+  "pills": {
+    "ACM": { "name": "Acamol",       "cell": "a1" },
+    "ADV": { "name": "Advil",        "cell": "a2" },
+    "SNG": { "name": "Singulair",    "cell": "a3" },
+    "SNF": { "name": "Sinufed",      "cell": "a4" },
+    "NZL": { "name": "Noze",         "cell": "a5" },
+    "IBU": { "name": "Ibuprofen",    "cell": "a6" },
+    "PAR": { "name": "Paracetamol",  "cell": "a7" },
+    "ASP": { "name": "Aspirin",      "cell": "a8" },
+
+    "AMX": { "name": "Amoxicillin",  "cell": "b1" },
+    "CAP": { "name": "Captopril",    "cell": "b2" },
+    "MET": { "name": "Metformin",    "cell": "b3" },
+    "OME": { "name": "Omeprazole",   "cell": "b4" },
+    "RAN": { "name": "Ranitidine",   "cell": "b5" },
+    "LOR": { "name": "Loratadine",   "cell": "b6" },
+    "DOX": { "name": "Doxycycline",  "cell": "b7" },
+    "LIS": { "name": "Lisinopril",   "cell": "b8" }
+  }
+}
