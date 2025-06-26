@@ -12,7 +12,7 @@
 bool pillCaught = false;        // Flag to indicate if the pill is trying to be caught
 bool stateCatchingPill = false; // Flag to indicate if the elivator is trying to catch the pill
 
-int pressureValue = 300; // Variable to store the pressure value
+int pressureValue = 3000; // Variable to store the pressure value
 
 void send_command(String command, int address)
 {
