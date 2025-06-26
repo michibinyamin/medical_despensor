@@ -76,7 +76,6 @@ void setup()
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
   DEBUGLN("start");
-  // motorController.calibrate();
 }
 
 void loop()
@@ -89,5 +88,4 @@ void loop()
     motorController.processCommand(command);
   }
   processI2CCommand();
-  // motorController.update();
 }

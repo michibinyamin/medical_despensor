@@ -84,19 +84,9 @@ void setup()
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
   DEBUGLN("start");
-
-  // motorController.calibrate();
 }
 
 void loop()
 {
-  // if (Serial.available() > 0)
-  // {
-  //   String command = Serial.readStringUntil('\n');
-  //   command.trim();
-  //   DEBUG_WITH_TEXT(command, "Current command: ", "");
-  //   motorController.processCommand(command);
-  // }
   processI2CCommand();
-  // motorController.update();
 }

@@ -30,7 +30,7 @@ void MotorController::processCommand(String command)
     s.replace(" ", "");
     s.replace(")", "");
 
-    if (s == "calibrate")
+    if (s == "calibrate") // Not active right now
     {
       calibrate();
     }
@@ -43,7 +43,7 @@ void MotorController::processCommand(String command)
     else if (s == "stepUp")
     {
       Serial.println("moving up"); // Moving untill optical sensor is pressed
-      moveUp();                    // 9000
+      moveUp();
     }
     else if (s == "stop")
     {
@@ -51,22 +51,24 @@ void MotorController::processCommand(String command)
     }
     else if (s == "toStart")
     {
+      Serial.println("moving to start");
       moveToStart(); // Also resets values
     }
     else if (s == "toEnd")
     {
+      Serial.println("moving to end");
       moveToEnd();
     }
     else if (s == "getPill")
     {
       motor.setRPM(SRPM);
       Serial.println("getPill command received");
-      moveSteps(-15000); // 9000
+      moveSteps(-15000);
     }
   }
 }
 
-void MotorController::calibrate()
+void MotorController::calibrate() // not working right now
 {
   Serial.println("calibration");
 }
@@ -142,8 +144,8 @@ bool MotorController::opticalStop()
   opticalBtn.tick();
   if (opticalBtn.press())
   {
-    countOptical--;
     Serial.println("opticalBtn pressed");
+    countOptical--;
     stopMotor();
     return true;
   }
@@ -166,51 +168,31 @@ void MotorController::moveSteps(int steps)
   motor.setRPM(RPM); // Reset RPM after moving
 }
 
-// void MotorController::moveUp()
-// {
-//   startMotor();
-//   motor.startMove(15000);
-//   isMoving = true;
-//   while (motor.nextAction())
-//   {
-//     if (opticalStop() != 0) // Stops motor if needed
-//     {
-//       break;
-//     }
-//   }
-//   stopMotor();
-// }
-
 void MotorController::moveUp()
 {
-    constexpr int FULL_STEPS_TO_IGNORE = 50;
-    constexpr int MICROSTEPS = 8;  // Set this to match your driver config
-    const long ignoreUntil = FULL_STEPS_TO_IGNORE * MICROSTEPS;
+  // First moves elivator slightly up just in case pogopin was pressed while on optical sensor already
+  constexpr int FULL_STEPS_TO_IGNORE = 50;
+  constexpr int MICROSTEPS = 8; // Set this to match your driver config
+  const long ignoreUntil = FULL_STEPS_TO_IGNORE * MICROSTEPS;
 
-    startMotor();
-    motor.startMove(15000);
-    isMoving = true;
+  startMotor();
+  motor.startMove(15000);
+  isMoving = true;
+  long stepsTaken = 0;
+  while (motor.nextAction())
+  {
+    stepsTaken++; // count each microstep
 
-    long stepsTaken = 0;
-
-    while (motor.nextAction())
+    if (stepsTaken >= ignoreUntil)
     {
-        stepsTaken++; // count each microstep
-
-        if (stepsTaken >= ignoreUntil)
-        {
-            if (opticalStop() != 0) // end-stop triggered
-            {
-                break;
-            }
-        }
+      if (opticalStop() != 0) // end-stop triggered
+      {
+        break;
+      }
     }
-
-    stopMotor();
+  }
+  stopMotor();
 }
-
-
-
 
 void MotorController::moveToPlatform(char platform_letter)
 {
@@ -218,7 +200,7 @@ void MotorController::moveToPlatform(char platform_letter)
   startMotor();
   if (platform_letter == 'a')
   {
-    motor.startMove(2.2 * platform_space * 2);
+    motor.startMove(2.2 * platform_space * 2); // dependent now on optical sensor and so the space is not really relevant
     while (motor.nextAction())
     {
       opticalBtn.tick();
