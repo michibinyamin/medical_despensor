@@ -98,7 +98,7 @@ void smart_search(char platform, int container)
     {
         digitalWrite(vacume_PIN, 1);
         send_command("motor(getPill)", Board_Elivator);
-        slavesApprove();
+        slavesApprove();    // Stops or becuase of limits or because cought pill
         if (pillCaught)
         {
             send_command("motor(stepUp)", Board_Elivator); // Move elivator up
@@ -141,6 +141,7 @@ void smart_search(char platform, int container)
                 send_command("motor(toStart)", Board_B_address);
                 send_command("motor(toStart)", Board_A_address);
                 digitalWrite(vacume_PIN, 0);
+                slavesApprove();
                 return;
             }
             // slavesApprove();
@@ -179,20 +180,21 @@ void get_pill(char platform, int container)
 
 void setup()
 {
-    Wire.begin(); // Join I2C bus as master
+    Wire.begin(); // Join I2C bus aws master
     Serial.begin(115200);
     delay(1000);
     Serial.println("Esp32 Started");
     pinMode(vacume_PIN, OUTPUT);
     digitalWrite(vacume_PIN, 0);
     pinMode(pressure_PIN, INPUT);
+    calibrate();
 }
 
 void loop()
 {
-    if (Serial.available() > 0)
+    if (Serial.available() > 0) // דפיקה בדלת
     {
-        String command = Serial.readStringUntil('\n'); // or use Serial.readString()
+        String command = Serial.readStringUntil('\n'); // or use Serial.readString() פתיחת
         if (command == "calibrate")
         {
             calibrate();
@@ -220,6 +222,8 @@ void loop()
         // }
         else if (command.startsWith("get"))
         {
+            calibrate();
+            slavesApprove();
             int startIdx = command.indexOf('(');
             int endIdx = command.indexOf(')');
             if (startIdx != -1 && endIdx != -1 && endIdx > startIdx)

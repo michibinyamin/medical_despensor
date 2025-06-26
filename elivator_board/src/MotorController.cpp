@@ -166,20 +166,51 @@ void MotorController::moveSteps(int steps)
   motor.setRPM(RPM); // Reset RPM after moving
 }
 
+// void MotorController::moveUp()
+// {
+//   startMotor();
+//   motor.startMove(15000);
+//   isMoving = true;
+//   while (motor.nextAction())
+//   {
+//     if (opticalStop() != 0) // Stops motor if needed
+//     {
+//       break;
+//     }
+//   }
+//   stopMotor();
+// }
+
 void MotorController::moveUp()
 {
-  startMotor();
-  motor.startMove(15000);
-  isMoving = true;
-  while (motor.nextAction())
-  {
-    if (opticalStop() != 0) // Stops motor if needed
+    constexpr int FULL_STEPS_TO_IGNORE = 50;
+    constexpr int MICROSTEPS = 8;  // Set this to match your driver config
+    const long ignoreUntil = FULL_STEPS_TO_IGNORE * MICROSTEPS;
+
+    startMotor();
+    motor.startMove(15000);
+    isMoving = true;
+
+    long stepsTaken = 0;
+
+    while (motor.nextAction())
     {
-      break;
+        stepsTaken++; // count each microstep
+
+        if (stepsTaken >= ignoreUntil)
+        {
+            if (opticalStop() != 0) // end-stop triggered
+            {
+                break;
+            }
+        }
     }
-  }
-  stopMotor();
+
+    stopMotor();
 }
+
+
+
 
 void MotorController::moveToPlatform(char platform_letter)
 {

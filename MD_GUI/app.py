@@ -18,7 +18,7 @@ class SerialWorker(threading.Thread):
         self.tx_q = tx_q
         try:
             import serial
-            self.ser = serial.Serial(port="COM3", baudrate=115200, timeout=1)
+            self.ser = serial.Serial(port="COM9", baudrate=115200, timeout=1)
         except Exception:
             self.ser = None
 
